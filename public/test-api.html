@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+  <h1>API Test</h1>
+  <button id="testDirect">Test Direct API Call</button>
+  <button id="testProxy">Test Proxy API Call</button>
+  <pre id="result" style="margin-top: 20px; padding: 10px; background: #f0f0f0;"></pre>
+
+  <script>
+    document.getElementById('testDirect').addEventListener('click', function() {
+      // Test direct API call
+      fetch('http://localhost/grocery-app/api/items.php')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
+          }
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById('result').textContent = 'Direct API call successful!\n' + JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+          document.getElementById('result').textContent = 'Direct API call error: ' + error.message;
+        });
+    });
+
+    document.getElementById('testProxy').addEventListener('click', function() {
+      // Test proxy API call
+      fetch('/api/items.php')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok: ' + response.statusText);
+          }
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById('result').textContent = 'Proxy API call successful!\n' + JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+          document.getElementById('result').textContent = 'Proxy API call error: ' + error.message;
+        });
+    });
+  </script>
+</body>
+</html> 

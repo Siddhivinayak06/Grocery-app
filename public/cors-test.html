@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CORS Test</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    button { padding: 10px 15px; margin: 10px 5px; cursor: pointer; }
+    pre { background: #f0f0f0; padding: 15px; border-radius: 5px; overflow: auto; }
+    .success { color: green; }
+    .error { color: red; }
+    h2 { margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>CORS Test Page</h1>
+  <p>This page tests different CORS scenarios with your API.</p>
+  
+  <h2>Test CORS.PHP</h2>
+  <div>
+    <button id="testFetch">Test with Fetch API</button>
+    <button id="testJQuery">Test with jQuery AJAX</button>
+    <button id="testXhr">Test with XMLHttpRequest</button>
+  </div>
+  
+  <h2>Test Proxy.PHP (New Solution)</h2>
+  <div>
+    <button id="testProxy">Test Proxy - All Products</button>
+    <button id="testProxyCategories">Test Proxy - Categories</button>
+    <button id="testProxyFeatured">Test Proxy - Featured Products</button>
+  </div>
+  
+  <h3>Result:</h3>
+  <pre id="result">Click a button to test...</pre>
+  
+  <h3>Debug Info:</h3>
+  <pre id="debug"></pre>
+
+  <script>
+    // Debug info
+    document.getElementById('debug').textContent = 
+      `Origin: ${window.location.origin}\n` +
+      `Testing cors.php: http://localhost/grocery-app/api/cors.php\n` +
+      `Testing proxy.php: http://localhost/grocery-app/api/proxy.php`;
+    
+    // Test with Fetch API
+    document.getElementById('testFetch').addEventListener('click', function() {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = "Testing with Fetch API...";
+      resultEl.className = "";
+      
+      fetch('http://localhost/grocery-app/api/cors.php', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        resultEl.textContent = "Response received. Status: " + response.status;
+        return response.json();
+      })
+      .then(data => {
+        resultEl.textContent = "Success! Response data:\n" + JSON.stringify(data, null, 2);
+        resultEl.className = "success";
+      })
+      .catch(error => {
+        resultEl.textContent = "Error: " + error.message;
+        resultEl.className = "error";
+      });
+    });
+    
+    // Test with jQuery AJAX
+    document.getElementById('testJQuery').addEventListener('click', function() {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = "Testing with jQuery AJAX...";
+      resultEl.className = "";
+      
+      $.ajax({
+        url: 'http://localhost/grocery-app/api/cors.php',
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          resultEl.textContent = "Success! Response data:\n" + JSON.stringify(data, null, 2);
+          resultEl.className = "success";
+        },
+        error: function(xhr, status, error) {
+          resultEl.textContent = "Error: " + error + "\nStatus: " + status + "\nResponse: " + xhr.responseText;
+          resultEl.className = "error";
+        }
+      });
+    });
+    
+    // Test with XMLHttpRequest
+    document.getElementById('testXhr').addEventListener('click', function() {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = "Testing with XMLHttpRequest...";
+      resultEl.className = "";
+      
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', 'http://localhost/grocery-app/api/cors.php', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            resultEl.textContent = "Success! Response data:\n" + JSON.stringify(data, null, 2);
+            resultEl.className = "success";
+          } catch (e) {
+            resultEl.textContent = "Error parsing JSON: " + e.message + "\nResponse: " + xhr.responseText;
+            resultEl.className = "error";
+          }
+        } else {
+          resultEl.textContent = "Error status: " + xhr.status + "\nResponse: " + xhr.responseText;
+          resultEl.className = "error";
+        }
+      };
+      
+      xhr.onerror = function() {
+        resultEl.textContent = "Network error occurred";
+        resultEl.className = "error";
+      };
+      
+      xhr.send();
+    });
+    
+    // Test proxy - all products
+    document.getElementById('testProxy').addEventListener('click', function() {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = "Testing proxy.php - all products...";
+      resultEl.className = "";
+      
+      fetch('http://localhost/grocery-app/api/proxy.php')
+        .then(response => {
+          resultEl.textContent = "Response received. Status: " + response.status;
+          return response.json();
+        })
+        .then(data => {
+          resultEl.textContent = "Success! Response data (showing first 2 items):\n" + 
+            JSON.stringify(data.slice(0, 2), null, 2) + 
+            "\n\n(Total items: " + data.length + ")";
+          resultEl.className = "success";
+        })
+        .catch(error => {
+          resultEl.textContent = "Error: " + error.message;
+          resultEl.className = "error";
+        });
+    });
+    
+    // Test proxy - categories
+    document.getElementById('testProxyCategories').addEventListener('click', function() {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = "Testing proxy.php - categories...";
+      resultEl.className = "";
+      
+      fetch('http://localhost/grocery-app/api/proxy.php?action=categories')
+        .then(response => {
+          resultEl.textContent = "Response received. Status: " + response.status;
+          return response.json();
+        })
+        .then(data => {
+          resultEl.textContent = "Success! Categories:\n" + JSON.stringify(data, null, 2);
+          resultEl.className = "success";
+        })
+        .catch(error => {
+          resultEl.textContent = "Error: " + error.message;
+          resultEl.className = "error";
+        });
+    });
+    
+    // Test proxy - featured products
+    document.getElementById('testProxyFeatured').addEventListener('click', function() {
+      const resultEl = document.getElementById('result');
+      resultEl.textContent = "Testing proxy.php - featured products...";
+      resultEl.className = "";
+      
+      fetch('http://localhost/grocery-app/api/proxy.php?action=featured')
+        .then(response => {
+          resultEl.textContent = "Response received. Status: " + response.status;
+          return response.json();
+        })
+        .then(data => {
+          resultEl.textContent = "Success! Featured products (showing first 2):\n" + 
+            JSON.stringify(data.slice(0, 2), null, 2) + 
+            "\n\n(Total items: " + data.length + ")";
+          resultEl.className = "success";
+        })
+        .catch(error => {
+          resultEl.textContent = "Error: " + error.message;
+          resultEl.className = "error";
+        });
+    });
+  </script>
+</body>
+</html> 

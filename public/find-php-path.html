@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PHP Path Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        input {
+            padding: 8px;
+            width: 80%;
+        }
+        button {
+            padding: 8px 16px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>PHP Path Finder</h1>
+    <p>This tool will help you find the correct path to your PHP files.</p>
+
+    <div class="input-group">
+        <p>1. First, let's check where your project is located:</p>
+        <input type="text" id="basePath" value="/grocery-app/api" placeholder="Base path to your PHP files">
+        <button onclick="testPath()">Test Path</button>
+    </div>
+
+    <div class="input-group">
+        <p>2. Let's also test alternate paths:</p>
+        <button onclick="testCommonPaths()">Test Common Paths</button>
+    </div>
+
+    <div id="results">
+        Results will appear here...
+    </div>
+
+    <h2>Common Setup Issues:</h2>
+    <ul>
+        <li>If you installed XAMPP/WAMP, your web root is typically at C:\xampp\htdocs or C:\wamp\www</li>
+        <li>Your files need to be inside this web root to be accessible via http://localhost</li>
+        <li>For example, if your files are at C:\xampp\htdocs\grocery-app\api, they should be accessible at http://localhost/grocery-app/api</li>
+        <li>If your React app runs on port 3000 and your PHP files are on port 80 (default for Apache), you'll need proper CORS headers</li>
+    </ul>
+
+    <script>
+        function testPath() {
+            const basePath = document.getElementById('basePath').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<p>Testing path: ${basePath}...</p>`;
+
+            testUrl(`http://localhost${basePath}/proxy.php`)
+                .then(result => {
+                    if (result.success) {
+                        resultsDiv.innerHTML += `<p class="success">✅ Found proxy.php at ${result.url}</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p class="error">❌ ${result.url} - ${result.error}</p>`;
+                    }
+                });
+        }
+
+        async function testUrl(url) {
+            try {
+                const response = await fetch(url, {
+                    method: 'HEAD',
+                    mode: 'no-cors' // This will prevent CORS errors for the test
+                });
+                return { success: true, url: url };
+            } catch (error) {
+                return { success: false, url: url, error: error.message };
+            }
+        }
+
+        async function testCommonPaths() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<p>Testing common paths...</p>`;
+
+            const paths = [
+                '/grocery-app/api',
+                '/api',
+                '/grocery/api',
+                '/app/api',
+                '/grocery-app',
+                '/New folder/grocery-app/api',
+                '/SIDDHIVINAYAK SAWANT/New folder/grocery-app/api',
+                '/xampp/htdocs/grocery-app/api'
+            ];
+
+            for (const path of paths) {
+                const url = `http://localhost${path}/proxy.php`;
+                const result = await testUrl(url);
+                
+                if (result.success) {
+                    resultsDiv.innerHTML += `<p class="success">✅ Found at ${result.url}</p>`;
+                } else {
+                    resultsDiv.innerHTML += `<p class="error">❌ ${result.url} - Not found</p>`;
+                }
+            }
+
+            resultsDiv.innerHTML += `<p>Testing complete. If all paths failed, please verify that:</p>
+            <ul>
+                <li>Your Apache server is running</li>
+                <li>Your PHP files are in the correct location</li>
+                <li>There are no PHP errors in your files</li>
+                <li>Try creating a simple test.php file in your web root with: <?php echo "PHP works!"; ?></li>
+            </ul>`;
+        }
+    </script>
+</body>
+</html> 
