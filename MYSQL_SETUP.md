@@ -33,7 +33,7 @@ CREATE DATABASE IF NOT EXISTS grocery_db;
 ```php
 $host = "localhost";
 $username = "root"; // Change if needed
-$password = "Omshri#20"; // Change to your MySQL password
+$password = "password"; // Change to your MySQL password
 $database = "grocery_db";
 ```
 
@@ -78,4 +78,5 @@ npm start
 
 - The application includes a fallback to mock data if the PHP API cannot be reached.
 - To modify the database schema or add more sample data, edit the `api/database.sql` file.
+
 - For production deployment, remove the mock data fallback and ensure proper error handling. 
